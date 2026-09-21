@@ -1,0 +1,597 @@
+Here is the complete, updated index.html file.
+The exact location where you need to paste your Google Apps Script Web App URL is clearly marked with a large 🔴 PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE comment block right at the top of the <script> section (around line 225).
+How to use this link:
+ * In Google Apps Script, click Deploy \rightarrow Manage deployments \rightarrow Copy your Web App URL (e.g., [https://script.google.com/macros/s/AKfycb.../exec](https://script.google.com/macros/s/AKfycb.../exec)).
+ * Paste it into the GOOGLE_WEB_APP_URL variable between the quotes, keeping ?format=json at the end:
+   const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycb.../exec?format=json";
+
+Complete Updated index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quality & Operational Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* Smooth transition for Collapsible Sidebar */
+    .sidebar-transition {
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nav-item-active {
+      background-color: #eff6ff;
+      color: #2563eb;
+      font-weight: 600;
+      border-right: 4px solid #2563eb;
+    }
+    .bg-red-alert {
+      background-color: #fef2f2 !important;
+      color: #dc2626 !important;
+      font-weight: 700 !important;
+    }
+    .badge-target-met {
+      background-color: #dcfce7;
+      color: #15803d;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .badge-target-short {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased flex h-screen overflow-hidden">
+
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside id="sidebar" class="bg-white border-r border-slate-200 flex flex-col justify-between sidebar-transition w-64 z-20 flex-shrink-0 relative">
+    
+    <!-- Sidebar Header & Toggle Button -->
+    <div>
+      <div class="h-16 flex items-center justify-between px-4 border-b border-slate-100">
+        <div class="flex items-center space-x-3 overflow-hidden">
+          <div class="bg-blue-600 text-white p-2 rounded-lg flex-shrink-0">
+            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+          </div>
+          <div class="sidebar-text whitespace-nowrap">
+            <h1 class="text-sm font-bold text-slate-900 leading-tight">QA & Ops Dashboard</h1>
+            <p class="text-[10px] text-slate-500">Team Analytics</p>
+          </div>
+        </div>
+        <!-- Collapse/Expand Toggle Button -->
+        <button onclick="toggleSidebar()" id="toggleBtn" title="Minimize / Expand Sidebar" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition focus:outline-none">
+          <i data-lucide="panel-left-close" id="toggleIcon" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="mt-4 px-2 space-y-1">
+        <button onclick="switchPage('ib-agent')" id="nav-ib-agent" class="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-sm text-slate-600 hover:bg-slate-50 nav-item-active transition" title="1. IB Agent Audit & Empathy">
+          <i data-lucide="user-check" class="w-5 h-5 flex-shrink-0"></i>
+          <span class="sidebar-text whitespace-nowrap">1. IB Agent Audit</span>
+        </button>
+
+        <button onclick="switchPage('empathy-wise')" id="nav-empathy-wise" class="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition" title="2. Empathy Parameter Wise">
+          <i data-lucide="heart-handshake" class="w-5 h-5 flex-shrink-0"></i>
+          <span class="sidebar-text whitespace-nowrap">2. Empathy Wise</span>
+        </button>
+
+        <button onclick="switchPage('adherence-lag')" id="nav-adherence-lag" class="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition" title="3. Adherence, Over Break & Lag">
+          <i data-lucide="clock" class="w-5 h-5 flex-shrink-0"></i>
+          <span class="sidebar-text whitespace-nowrap">3. Adherence & Lag</span>
+        </button>
+
+        <button onclick="switchPage('aht-cfs')" id="nav-aht-cfs" class="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition" title="4. AHT & CFS Targets">
+          <i data-lucide="target" class="w-5 h-5 flex-shrink-0"></i>
+          <span class="sidebar-text whitespace-nowrap">4. AHT & CFS Targets</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer Info -->
+    <div class="p-4 border-t border-slate-100 sidebar-text">
+      <div class="bg-slate-50 rounded-lg p-3 text-xs text-slate-500">
+        <p class="font-semibold text-slate-700">Live Targets</p>
+        <p class="mt-0.5">Empathy: 88.0%</p>
+        <p>AHT: 170s | CFS: 90%</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- TOP HEADER BAR -->
+    <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 z-10 flex-shrink-0">
+      <div class="flex items-center space-x-4">
+        <h2 id="pageTitle" class="text-lg font-bold text-slate-800">1. IB AGENT Audit & Empathy Overview</h2>
+      </div>
+
+      <!-- Controls & Search -->
+      <div class="flex items-center space-x-3">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+          <input type="text" id="searchInput" oninput="filterDashboard()" placeholder="Search Agent Name or ID..." class="pl-9 pr-4 py-1.5 text-sm bg-slate-100 border-none rounded-lg focus:ring-2 focus:ring-blue-500 w-60 sm:w-72">
+        </div>
+        <button onclick="reloadData()" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center space-x-1.5 transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Sync Data</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- DASHBOARD VIEW BODY (Scrollable Area) -->
+    <main class="flex-1 overflow-y-auto p-6">
+
+      <!-- KPI METRIC CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Team Members</p>
+            <h3 id="kpi-team-count" class="text-2xl font-bold text-slate-900 mt-1">20</h3>
+          </div>
+          <div class="bg-blue-50 text-blue-600 p-3 rounded-lg"><i data-lucide="users" class="w-6 h-6"></i></div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Empathy Target</p>
+            <h3 class="text-2xl font-bold text-slate-900 mt-1">88.0%</h3>
+          </div>
+          <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg"><i data-lucide="award" class="w-6 h-6"></i></div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Target AHT</p>
+            <h3 class="text-2xl font-bold text-slate-900 mt-1">170 Sec</h3>
+          </div>
+          <div class="bg-purple-50 text-purple-600 p-3 rounded-lg"><i data-lucide="timer" class="w-6 h-6"></i></div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+          <div>
+            <p class="text-xs text-slate-500 font-medium">Target CFS</p>
+            <h3 class="text-2xl font-bold text-slate-900 mt-1">90.0%</h3>
+          </div>
+          <div class="bg-amber-50 text-amber-600 p-3 rounded-lg"><i data-lucide="thumbs-up" class="w-6 h-6"></i></div>
+        </div>
+      </div>
+
+      <!-- PAGE 1: IB AGENT WISE DASHBOARD -->
+      <section id="page-ib-agent" class="dashboard-page bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h2 class="font-bold text-slate-800">IB AGENT Audit & Empathy Summary</h2>
+          <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2.5 py-1 rounded-full">Target Empathy: 88%</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-100 text-slate-700 uppercase text-xs font-semibold">
+              <tr>
+                <th class="py-3 px-4">Agent Name</th>
+                <th class="py-3 px-4">VDI ID</th>
+                <th class="py-3 px-4 text-center">Total Audit</th>
+                <th class="py-3 px-4 text-center">Pass</th>
+                <th class="py-3 px-4 text-center">Fail</th>
+                <th class="py-3 px-4 text-center">Fail %</th>
+                <th class="py-3 px-4 text-center">Emp Pass</th>
+                <th class="py-3 px-4 text-center">Emp Fail</th>
+                <th class="py-3 px-4 text-center">Emp %</th>
+                <th class="py-3 px-4 text-center">Emp Shortage (vs 88%)</th>
+              </tr>
+            </thead>
+            <tbody id="table-ib-agent-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PAGE 2: EMPATHY WISE DASHBOARD -->
+      <section id="page-empathy-wise" class="dashboard-page hidden bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h2 class="font-bold text-slate-800">Empathy Parameter Wise Pass %</h2>
+          <div class="flex items-center space-x-2 text-xs">
+            <span class="w-3 h-3 bg-red-100 border border-red-500 rounded-sm inline-block"></span>
+            <span class="text-slate-600 font-medium">&lt; 87.5% Marked Red</span>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-100 text-slate-700 uppercase text-xs font-semibold">
+              <tr>
+                <th class="py-3 px-4">VDI ID / Agent</th>
+                <th class="py-3 px-3 text-center">Warm Greetings</th>
+                <th class="py-3 px-3 text-center">Ack & Understanding</th>
+                <th class="py-3 px-3 text-center">Speech Clarity</th>
+                <th class="py-3 px-3 text-center">Proper Listening</th>
+                <th class="py-3 px-3 text-center">Personalization</th>
+                <th class="py-3 px-3 text-center">Hold Mgmt</th>
+                <th class="py-3 px-3 text-center">Emotional Tone</th>
+                <th class="py-3 px-3 text-center">Closing Courtesy</th>
+              </tr>
+            </thead>
+            <tbody id="table-empathy-wise-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PAGE 3: ADHERENCE & LAG HOUR DASHBOARD -->
+      <section id="page-adherence-lag" class="dashboard-page hidden bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+          <h2 class="font-bold text-slate-800">Agent Wise Adherence, Over Break & Lag Hours</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-100 text-slate-700 uppercase text-xs font-semibold">
+              <tr>
+                <th class="py-3 px-4">GNX ID</th>
+                <th class="py-3 px-4">Agent Name</th>
+                <th class="py-3 px-4 text-center">Adherence %</th>
+                <th class="py-3 px-4 text-center">Over Break (Extra Break)</th>
+                <th class="py-3 px-4 text-center">Lag Time</th>
+              </tr>
+            </thead>
+            <tbody id="table-adherence-lag-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PAGE 4: AHT & CFS DASHBOARD -->
+      <section id="page-aht-cfs" class="dashboard-page hidden bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h2 class="font-bold text-slate-800">Agent Wise AHT & CFS Target Shortage</h2>
+          <div class="flex space-x-3 text-xs">
+            <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-semibold">AHT Target: 170s</span>
+            <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-semibold">CFS Target: 90%</span>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-100 text-slate-700 uppercase text-xs font-semibold">
+              <tr>
+                <th class="py-3 px-4">Agent Name</th>
+                <th class="py-3 px-4 text-center">Actual AHT (Sec)</th>
+                <th class="py-3 px-4 text-center">AHT Target Shortage</th>
+                <th class="py-3 px-4 text-center">Actual CFS %</th>
+                <th class="py-3 px-4 text-center">CFS Target Shortage</th>
+              </tr>
+            </thead>
+            <tbody id="table-aht-cfs-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- DASHBOARD JAVASCRIPT -->
+  <script>
+    // =========================================================================
+    // 🔴 PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
+    // Replace the URL inside the quotes with your Web App URL + "?format=json"
+    // =========================================================================
+    const GOOGLE_WEB_APP_URL = "PASTE_YOUR_WEB_APP_URL_HERE?format=json";
+
+    let isSidebarCollapsed = false;
+
+    // Toggle Sidebar Minimize / Expand
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const toggleIcon = document.getElementById('toggleIcon');
+      const sidebarTexts = document.querySelectorAll('.sidebar-text');
+
+      isSidebarCollapsed = !isSidebarCollapsed;
+
+      if (isSidebarCollapsed) {
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-16');
+        sidebarTexts.forEach(el => el.classList.add('hidden'));
+        toggleIcon.setAttribute('data-lucide', 'panel-left-open');
+      } else {
+        sidebar.classList.remove('w-16');
+        sidebar.classList.add('w-64');
+        sidebarTexts.forEach(el => el.classList.remove('hidden'));
+        toggleIcon.setAttribute('data-lucide', 'panel-left-close');
+      }
+      lucide.createIcons();
+    }
+
+    // Default Fallback Dataset
+    let dashboardData = {
+      team_members: [
+        { "gnx_id": "20309120", "name": "Ajanta Kuri", "vdi_id": "genex.kuri" },
+        { "gnx_id": "20309275", "name": "Mahmuda Sultana", "vdi_id": "genex.sulmah" },
+        { "gnx_id": "20309456", "name": "Mohammed Mashruf Matin Sikder", "vdi_id": "genex.msikder" },
+        { "gnx_id": "20309629", "name": "Mahabub Talukder Rimon", "vdi_id": "genex.rimon3" },
+        { "gnx_id": "20309626", "name": "Mohammed Talha Zobair", "vdi_id": "genex.zobair" },
+        { "gnx_id": "20309659", "name": "Kajol Rekha", "vdi_id": "genex.krekha" },
+        { "gnx_id": "20309745", "name": "Md. Araf Yasir", "vdi_id": "genex.yasir" },
+        { "gnx_id": "20309840", "name": "Shibom Ghosh", "vdi_id": "genex.shibom66" },
+        { "gnx_id": "20309862", "name": "Karisma Das", "vdi_id": "genex.karisma66" },
+        { "gnx_id": "20309904", "name": "Mahinur Rahman", "vdi_id": "genex.rahman5" },
+        { "gnx_id": "20309905", "name": "Roshan Hossain", "vdi_id": "genex.hossain10" },
+        { "gnx_id": "20309906", "name": "MD Nobab Sharif", "vdi_id": "genex.sharif" },
+        { "gnx_id": "20309900", "name": "MD Abtahi Efaz Zaki", "vdi_id": "genex.zaki" },
+        { "gnx_id": "20309907", "name": "Partho Roy", "vdi_id": "genex.roy1" },
+        { "gnx_id": "20309909", "name": "Nirab Kanti Dey", "vdi_id": "genex.dey3" },
+        { "gnx_id": "20309930", "name": "Md Mohim", "vdi_id": "genex.mohim1" },
+        { "gnx_id": "20309928", "name": "Tofajjol Hossen Amjad", "vdi_id": "genex.tofajjol" },
+        { "gnx_id": "20309942", "name": "Mahim Azad", "vdi_id": "genex.mahim2" },
+        { "gnx_id": "20309940", "name": "Md Shidul Islam Shehab", "vdi_id": "genex.shidul" },
+        { "gnx_id": "20309933", "name": "Sajib dev nath", "vdi_id": "genex.sajib5" }
+      ],
+      agent_audit_summary: [
+        { "vdi_id": "genex.kuri", "name": "Ajanta Kuri", "total_audit": 2, "total_pass": 2, "total_fail": 0, "fail_pct": 0, "emp_pass": 15, "emp_fail": 1, "emp_pct": 93.75 },
+        { "vdi_id": "genex.sulmah", "name": "Mahmuda Sultana", "total_audit": 5, "total_pass": 5, "total_fail": 0, "fail_pct": 0, "emp_pass": 37, "emp_fail": 3, "emp_pct": 92.50 },
+        { "vdi_id": "genex.msikder", "name": "Mohammed Mashruf Matin Sikder", "total_audit": 4, "total_pass": 4, "total_fail": 0, "fail_pct": 0, "emp_pass": 31, "emp_fail": 1, "emp_pct": 96.88 },
+        { "vdi_id": "genex.rimon3", "name": "Mahabub Talukder Rimon", "total_audit": 9, "total_pass": 9, "total_fail": 0, "fail_pct": 0, "emp_pass": 64, "emp_fail": 8, "emp_pct": 88.89 },
+        { "vdi_id": "genex.zobair", "name": "Mohammed Talha Zobair", "total_audit": 1, "total_pass": 0, "total_fail": 1, "fail_pct": 100, "emp_pass": 4, "emp_fail": 4, "emp_pct": 50.00 },
+        { "vdi_id": "genex.krekha", "name": "Kajol Rekha", "total_audit": 2, "total_pass": 2, "total_fail": 0, "fail_pct": 0, "emp_pass": 16, "emp_fail": 0, "emp_pct": 100.00 },
+        { "vdi_id": "genex.yasir", "name": "Md. Araf Yasir", "total_audit": 5, "total_pass": 5, "total_fail": 0, "fail_pct": 0, "emp_pass": 36, "emp_fail": 4, "emp_pct": 90.00 },
+        { "vdi_id": "genex.shibom66", "name": "Shibom Ghosh", "total_audit": 11, "total_pass": 11, "total_fail": 0, "fail_pct": 0, "emp_pass": 74, "emp_fail": 14, "emp_pct": 84.09 },
+        { "vdi_id": "genex.karisma66", "name": "Karisma Das", "total_audit": 10, "total_pass": 10, "total_fail": 0, "fail_pct": 0, "emp_pass": 68, "emp_fail": 12, "emp_pct": 85.00 },
+        { "vdi_id": "genex.rahman5", "name": "Mahinur Rahman", "total_audit": 7, "total_pass": 6, "total_fail": 1, "fail_pct": 14.29, "emp_pass": 47, "emp_fail": 9, "emp_pct": 83.93 },
+        { "vdi_id": "genex.hossain10", "name": "Roshan Hossain", "total_audit": 4, "total_pass": 1, "total_fail": 3, "fail_pct": 75.00, "emp_pass": 16, "emp_fail": 16, "emp_pct": 50.00 },
+        { "vdi_id": "genex.sharif", "name": "MD Nobab Sharif", "total_audit": 7, "total_pass": 4, "total_fail": 3, "fail_pct": 42.86, "emp_pass": 45, "emp_fail": 11, "emp_pct": 80.36 },
+        { "vdi_id": "genex.zaki", "name": "MD Abtahi Efaz Zaki", "total_audit": 10, "total_pass": 10, "total_fail": 0, "fail_pct": 0, "emp_pass": 67, "emp_fail": 13, "emp_pct": 83.75 },
+        { "vdi_id": "genex.roy1", "name": "Partho Roy", "total_audit": 6, "total_pass": 6, "total_fail": 0, "fail_pct": 0, "emp_pass": 37, "emp_fail": 11, "emp_pct": 77.08 },
+        { "vdi_id": "genex.mohim1", "name": "Md Mohim", "total_audit": 6, "total_pass": 6, "total_fail": 0, "fail_pct": 0, "emp_pass": 39, "emp_fail": 9, "emp_pct": 81.25 },
+        { "vdi_id": "genex.tofajjol", "name": "Tofajjol Hossen Amjad", "total_audit": 4, "total_pass": 4, "total_fail": 0, "fail_pct": 0, "emp_pass": 28, "emp_fail": 4, "emp_pct": 87.50 },
+        { "vdi_id": "genex.mahim2", "name": "Mahim Azad", "total_audit": 2, "total_pass": 2, "total_fail": 0, "fail_pct": 0, "emp_pass": 9, "emp_fail": 7, "emp_pct": 56.25 },
+        { "vdi_id": "genex.shidul", "name": "Md Shidul Islam Shehab", "total_audit": 3, "total_pass": 3, "total_fail": 0, "fail_pct": 0, "emp_pass": 19, "emp_fail": 5, "emp_pct": 79.17 },
+        { "vdi_id": "genex.sajib5", "name": "Sajib dev nath", "total_audit": 4, "total_pass": 4, "total_fail": 0, "fail_pct": 0, "emp_pass": 22, "emp_fail": 10, "emp_pct": 68.75 }
+      ],
+      empathy_parameter_wise: [
+        { "vdi_id": "genex.kuri", "warm_greetings": 100.0, "acknowledgment": 100.0, "speech_clarity": 100.0, "proper_listening": 100.0, "personalization": 100.0, "time_hold": 100.0, "emotional_tone": 50.0, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.sulmah", "warm_greetings": 80.0, "acknowledgment": 80.0, "speech_clarity": 100.0, "proper_listening": 100.0, "personalization": 100.0, "time_hold": 80.0, "emotional_tone": 100.0, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.msikder", "warm_greetings": 75.0, "acknowledgment": 100.0, "speech_clarity": 100.0, "proper_listening": 100.0, "personalization": 100.0, "time_hold": 100.0, "emotional_tone": 100.0, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.rimon3", "warm_greetings": 100.0, "acknowledgment": 77.78, "speech_clarity": 88.89, "proper_listening": 88.89, "personalization": 100.0, "time_hold": 88.89, "emotional_tone": 55.56, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.zobair", "warm_greetings": 100.0, "acknowledgment": 0.0, "speech_clarity": 100.0, "proper_listening": 0.0, "personalization": 100.0, "time_hold": 0.0, "emotional_tone": 100.0, "closing_courtesy": 0.0 },
+        { "vdi_id": "genex.krekha", "warm_greetings": 100.0, "acknowledgment": 100.0, "speech_clarity": 100.0, "proper_listening": 100.0, "personalization": 100.0, "time_hold": 100.0, "emotional_tone": 100.0, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.yasir", "warm_greetings": 100.0, "acknowledgment": 100.0, "speech_clarity": 100.0, "proper_listening": 60.0, "personalization": 100.0, "time_hold": 60.0, "emotional_tone": 100.0, "closing_courtesy": 80.0 },
+        { "vdi_id": "genex.shibom66", "warm_greetings": 90.91, "acknowledgment": 90.91, "speech_clarity": 45.45, "proper_listening": 90.91, "personalization": 81.82, "time_hold": 100.0, "emotional_tone": 90.91, "closing_courtesy": 81.82 },
+        { "vdi_id": "genex.karisma66", "warm_greetings": 100.0, "acknowledgment": 70.0, "speech_clarity": 80.0, "proper_listening": 80.0, "personalization": 90.0, "time_hold": 70.0, "emotional_tone": 90.0, "closing_courtesy": 90.0 },
+        { "vdi_id": "genex.rahman5", "warm_greetings": 85.71, "acknowledgment": 85.71, "speech_clarity": 85.71, "proper_listening": 85.71, "personalization": 57.14, "time_hold": 100.0, "emotional_tone": 85.71, "closing_courtesy": 85.71 },
+        { "vdi_id": "genex.hossain10", "warm_greetings": 25.0, "acknowledgment": 75.0, "speech_clarity": 50.0, "proper_listening": 25.0, "personalization": 75.0, "time_hold": 50.0, "emotional_tone": 75.0, "closing_courtesy": 75.0 },
+        { "vdi_id": "genex.sharif", "warm_greetings": 100.0, "acknowledgment": 57.14, "speech_clarity": 71.43, "proper_listening": 85.71, "personalization": 85.71, "time_hold": 71.43, "emotional_tone": 85.71, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.zaki", "warm_greetings": 100.0, "acknowledgment": 40.0, "speech_clarity": 60.0, "proper_listening": 100.0, "personalization": 100.0, "time_hold": 50.0, "emotional_tone": 90.0, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.roy1", "warm_greetings": 100.0, "acknowledgment": 83.33, "speech_clarity": 83.33, "proper_listening": 83.33, "personalization": 83.33, "time_hold": 50.0, "emotional_tone": 83.33, "closing_courtesy": 66.67 },
+        { "vdi_id": "genex.mohim1", "warm_greetings": 100.0, "acknowledgment": 50.0, "speech_clarity": 33.33, "proper_listening": 100.0, "personalization": 83.33, "time_hold": 100.0, "emotional_tone": 66.67, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.tofajjol", "warm_greetings": 100.0, "acknowledgment": 75.0, "speech_clarity": 0.0, "proper_listening": 100.0, "personalization": 75.0, "time_hold": 75.0, "emotional_tone": 75.0, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.mahim2", "warm_greetings": 100.0, "acknowledgment": 50.0, "speech_clarity": 0.0, "proper_listening": 50.0, "personalization": 50.0, "time_hold": 50.0, "emotional_tone": 50.0, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.shidul", "warm_greetings": 100.0, "acknowledgment": 66.67, "speech_clarity": 33.33, "proper_listening": 100.0, "personalization": 100.0, "time_hold": 66.67, "emotional_tone": 33.33, "closing_courtesy": 100.0 },
+        { "vdi_id": "genex.sajib5", "warm_greetings": 75.0, "acknowledgment": 25.0, "speech_clarity": 50.0, "proper_listening": 75.0, "personalization": 100.0, "time_hold": 75.0, "emotional_tone": 75.0, "closing_courtesy": 75.0 }
+      ],
+      agent_operations: [
+        { "gnx_id": "20309120", "name": "Ajanta Kuri", "adherence_pct": 87.50, "extra_break": "0:00:00", "lag_time": "5:23:32", "aht_sec": 209.65, "cfs_pct": 90.46 },
+        { "gnx_id": "20309275", "name": "Mahmuda Sultana", "adherence_pct": 100.00, "extra_break": "0:00:00", "lag_time": "1:25:39", "aht_sec": 174.27, "cfs_pct": 90.06 },
+        { "gnx_id": "20309407", "name": "Shahida akter", "adherence_pct": 100.00, "extra_break": "0:00:00", "lag_time": "1:24:06", "aht_sec": 190.84, "cfs_pct": 92.77 },
+        { "gnx_id": "20309456", "name": "Mohammed Mashruf Matin Sikder", "adherence_pct": 76.67, "extra_break": "0:00:00", "lag_time": "19:56:20", "aht_sec": 160.04, "cfs_pct": 95.50 },
+        { "gnx_id": "20309626", "name": "Mohammed Talha Zobair", "adherence_pct": 93.33, "extra_break": "3:29:24", "lag_time": "14:25:52", "aht_sec": 142.99, "cfs_pct": null },
+        { "gnx_id": "20309629", "name": "Mahabub Talukder Rimon", "adherence_pct": 97.06, "extra_break": "0:36:43", "lag_time": "1:31:31", "aht_sec": 185.51, "cfs_pct": 94.77 },
+        { "gnx_id": "20309659", "name": "Kajol Rekha", "adherence_pct": 100.00, "extra_break": "0:00:00", "lag_time": "0:00:00", "aht_sec": 203.27, "cfs_pct": 93.46 },
+        { "gnx_id": "20309745", "name": "Md. Araf Yasir", "adherence_pct": 81.58, "extra_break": "0:00:00", "lag_time": "13:24:36", "aht_sec": 215.69, "cfs_pct": 83.69 },
+        { "gnx_id": "20309777", "name": "Md Arif Hasan Ayon", "adherence_pct": 90.00, "extra_break": "0:00:00", "lag_time": "5:48:56", "aht_sec": 201.63, "cfs_pct": 78.02 },
+        { "gnx_id": "20309840", "name": "Shibom Ghosh", "adherence_pct": 97.37, "extra_break": "0:53:15", "lag_time": "11:44:09", "aht_sec": 201.64, "cfs_pct": 90.33 },
+        { "gnx_id": "20309862", "name": "Karisma Das", "adherence_pct": 94.74, "extra_break": "0:00:00", "lag_time": "4:55:58", "aht_sec": 194.36, "cfs_pct": 88.96 },
+        { "gnx_id": "20309904", "name": "Mahinur Rahman", "adherence_pct": 100.00, "extra_break": "1:45:46", "lag_time": "2:49:38", "aht_sec": 160.56, "cfs_pct": null },
+        { "gnx_id": "20309905", "name": "Roshan Hossain", "adherence_pct": 94.12, "extra_break": "2:37:15", "lag_time": "4:31:01", "aht_sec": 228.11, "cfs_pct": null },
+        { "gnx_id": "20309906", "name": "MD Nobab Sharif", "adherence_pct": 94.44, "extra_break": "0:38:39", "lag_time": "3:47:51", "aht_sec": 228.52, "cfs_pct": null },
+        { "gnx_id": "20309900", "name": "MD Abtahi Efaz Zaki", "adherence_pct": 100.00, "extra_break": "0:00:00", "lag_time": "0:00:00", "aht_sec": 229.26, "cfs_pct": null },
+        { "gnx_id": "20309907", "name": "Partho Roy", "adherence_pct": 85.29, "extra_break": "2:25:06", "lag_time": "8:09:58", "aht_sec": 193.29, "cfs_pct": null },
+        { "gnx_id": "20309909", "name": "Nirab Kanti Dey", "adherence_pct": 83.33, "extra_break": "0:00:00", "lag_time": "11:11:46", "aht_sec": 211.63, "cfs_pct": null },
+        { "gnx_id": "20309930", "name": "Md Mohim", "adherence_pct": 87.50, "extra_break": "0:00:00", "lag_time": "3:16:59", "aht_sec": 212.97, "cfs_pct": null },
+        { "gnx_id": "20309928", "name": "Tofajjol Hossen Amjad", "adherence_pct": 90.00, "extra_break": "0:00:00", "lag_time": "3:00:46", "aht_sec": 236.21, "cfs_pct": null },
+        { "gnx_id": "20309942", "name": "Mahim Azad", "adherence_pct": 95.00, "extra_break": "0:00:00", "lag_time": "3:03:54", "aht_sec": 268.57, "cfs_pct": null },
+        { "gnx_id": "20309940", "name": "Md Shidul Islam Shehab", "adherence_pct": 93.75, "extra_break": "0:00:00", "lag_time": "5:06:51", "aht_sec": 220.07, "cfs_pct": null },
+        { "gnx_id": "20309933", "name": "Sajib dev nath", "adherence_pct": 82.14, "extra_break": "0:00:00", "lag_time": "2:08:21", "aht_sec": 217.66, "cfs_pct": null }
+      ]
+    };
+
+    const TARGET_EMPATHY = 88.0;
+    const TARGET_AHT = 170.0;
+    const TARGET_CFS = 90.0;
+
+    const pageTitles = {
+      'ib-agent': '1. IB AGENT Audit & Empathy Overview',
+      'empathy-wise': '2. Empathy Parameter Wise Pass %',
+      'adherence-lag': '3. Agent Adherence, Over Break & Lag Hours',
+      'aht-cfs': '4. Agent AHT & CFS Target Shortage'
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+      lucide.createIcons();
+      initDashboard();
+
+      // Automatically fetch live data if URL is provided
+      if (GOOGLE_WEB_APP_URL && !GOOGLE_WEB_APP_URL.includes("PASTE_YOUR_WEB_APP_URL_HERE")) {
+        fetchLiveData();
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(data) {
+          if (data && data.team_members) {
+            dashboardData = data;
+            initDashboard();
+          }
+        }).getDashboardData();
+      }
+    });
+
+    function fetchLiveData() {
+      fetch(GOOGLE_WEB_APP_URL)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.team_members) {
+            dashboardData = data;
+            initDashboard();
+            console.log("Successfully updated dashboard with live Google Sheet data.");
+          }
+        })
+        .catch(err => console.error("Error fetching Google Sheet live data:", err));
+    }
+
+    function reloadData() {
+      if (GOOGLE_WEB_APP_URL && !GOOGLE_WEB_APP_URL.includes("PASTE_YOUR_WEB_APP_URL_HERE")) {
+        fetchLiveData();
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(data) {
+          dashboardData = data;
+          initDashboard();
+        }).getDashboardData();
+      } else {
+        initDashboard();
+      }
+    }
+
+    function switchPage(pageId) {
+      document.querySelectorAll('.dashboard-page').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('nav button').forEach(b => {
+        b.classList.remove('nav-item-active');
+      });
+
+      document.getElementById('page-' + pageId).classList.remove('hidden');
+      const activeBtn = document.getElementById('nav-' + pageId);
+      activeBtn.classList.add('nav-item-active');
+
+      document.getElementById('pageTitle').innerText = pageTitles[pageId] || '';
+    }
+
+    function initDashboard() {
+      renderP1_IBAgent();
+      renderP2_EmpathyWise();
+      renderP3_AdherenceLag();
+      renderP4_AHT_CFS();
+      document.getElementById('kpi-team-count').innerText = dashboardData.team_members.length;
+    }
+
+    function renderP1_IBAgent(filter = "") {
+      const tbody = document.getElementById('table-ib-agent-body');
+      tbody.innerHTML = "";
+      
+      dashboardData.agent_audit_summary.forEach(item => {
+        if (filter && !item.name.toLowerCase().includes(filter.toLowerCase()) && !item.vdi_id.toLowerCase().includes(filter.toLowerCase())) return;
+
+        const shortage = Math.round((TARGET_EMPATHY - item.emp_pct) * 100) / 100;
+        const shortageBadge = shortage <= 0 
+          ? `<span class="badge-target-met">Target Met</span>`
+          : `<span class="badge-target-short">Shortage: ${shortage}%</span>`;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-semibold text-slate-800">${item.name}</td>
+          <td class="py-3 px-4 text-slate-500">${item.vdi_id}</td>
+          <td class="py-3 px-4 text-center font-bold">${item.total_audit}</td>
+          <td class="py-3 px-4 text-center text-emerald-600 font-semibold">${item.total_pass}</td>
+          <td class="py-3 px-4 text-center text-rose-600 font-semibold">${item.total_fail}</td>
+          <td class="py-3 px-4 text-center">${item.fail_pct}%</td>
+          <td class="py-3 px-4 text-center text-emerald-600">${item.emp_pass}</td>
+          <td class="py-3 px-4 text-center text-rose-600">${item.emp_fail}</td>
+          <td class="py-3 px-4 text-center font-bold text-blue-600">${item.emp_pct}%</td>
+          <td class="py-3 px-4 text-center">${shortageBadge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderP2_EmpathyWise(filter = "") {
+      const tbody = document.getElementById('table-empathy-wise-body');
+      tbody.innerHTML = "";
+
+      dashboardData.empathy_parameter_wise.forEach(item => {
+        const agent = dashboardData.team_members.find(m => m.vdi_id === item.vdi_id) || { name: item.vdi_id };
+        if (filter && !agent.name.toLowerCase().includes(filter.toLowerCase()) && !item.vdi_id.toLowerCase().includes(filter.toLowerCase())) return;
+
+        const cell = (val) => {
+          const isRed = val < 87.5;
+          return `<td class="py-3 px-3 text-center ${isRed ? 'bg-red-alert' : ''}">${val.toFixed(1)}%</td>`;
+        };
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-semibold text-slate-800">${agent.name} <div class="text-xs font-normal text-slate-400">${item.vdi_id}</div></td>
+          ${cell(item.warm_greetings)}
+          ${cell(item.acknowledgment)}
+          ${cell(item.speech_clarity)}
+          ${cell(item.proper_listening)}
+          ${cell(item.personalization)}
+          ${cell(item.time_hold)}
+          ${cell(item.emotional_tone)}
+          ${cell(item.closing_courtesy)}
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderP3_AdherenceLag(filter = "") {
+      const tbody = document.getElementById('table-adherence-lag-body');
+      tbody.innerHTML = "";
+
+      dashboardData.agent_operations.forEach(item => {
+        if (filter && !item.name.toLowerCase().includes(filter.toLowerCase()) && !item.gnx_id.toLowerCase().includes(filter.toLowerCase())) return;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono text-xs text-slate-500">${item.gnx_id}</td>
+          <td class="py-3 px-4 font-semibold text-slate-800">${item.name}</td>
+          <td class="py-3 px-4 text-center font-bold text-emerald-600">${item.adherence_pct}%</td>
+          <td class="py-3 px-4 text-center ${item.extra_break !== "0:00:00" ? 'text-amber-600 font-semibold' : 'text-slate-400'}">${item.extra_break}</td>
+          <td class="py-3 px-4 text-center font-medium ${item.lag_time !== "0:00:00" ? 'text-rose-600' : 'text-slate-400'}">${item.lag_time}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderP4_AHT_CFS(filter = "") {
+      const tbody = document.getElementById('table-aht-cfs-body');
+      tbody.innerHTML = "";
+
+      dashboardData.agent_operations.forEach(item => {
+        if (filter && !item.name.toLowerCase().includes(filter.toLowerCase())) return;
+
+        // AHT Shortage (Target: 170 sec)
+        const ahtDiff = Math.round((item.aht_sec - TARGET_AHT) * 100) / 100;
+        const ahtBadge = ahtDiff <= 0 
+          ? `<span class="badge-target-met">Target Met</span>`
+          : `<span class="badge-target-short">+${ahtDiff}s Over</span>`;
+
+        // CFS Shortage (Target: 90%)
+        let cfsBadge = `<span class="text-slate-400 text-xs">N/A</span>`;
+        if (item.cfs_pct !== null) {
+          const cfsShort = Math.round((TARGET_CFS - item.cfs_pct) * 100) / 100;
+          cfsBadge = cfsShort <= 0 
+            ? `<span class="badge-target-met">Target Met</span>`
+            : `<span class="badge-target-short">Shortage: ${cfsShort}%</span>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-semibold text-slate-800">${item.name}</td>
+          <td class="py-3 px-4 text-center font-bold">${item.aht_sec} s</td>
+          <td class="py-3 px-4 text-center">${ahtBadge}</td>
+          <td class="py-3 px-4 text-center font-bold">${item.cfs_pct !== null ? item.cfs_pct + '%' : 'N/A'}</td>
+          <td class="py-3 px-4 text-center">${cfsBadge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterDashboard() {
+      const q = document.getElementById('searchInput').value;
+      renderP1_IBAgent(q);
+      renderP2_EmpathyWise(q);
+      renderP3_AdherenceLag(q);
+      renderP4_AHT_CFS(q);
+    }
+  </script>
+</body>
+</html>
+
